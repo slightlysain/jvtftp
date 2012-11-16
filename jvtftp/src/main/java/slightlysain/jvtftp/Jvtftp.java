@@ -4,7 +4,7 @@ package slightlysain.jvtftp;
  * Hello world!
  *
  */
-public class App 
+public class Jvtftp 
 {
     public static void main( String[] args )
     {
