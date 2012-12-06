@@ -1,24 +1,27 @@
 package slightlysain.jvtftp.server;
 
+import static org.junit.Assert.*;
+
 import java.net.InetAddress;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.junit.Before;
+import org.junit.Test;
 
 import slightlysain.jvtftp.request.Request;
 
 import junit.framework.TestCase;
 
-public class TestClientRegisterImpl extends TestCase {
+public class TestClientRegisterImpl {
 
 	ClientRegister register;
 	Mockery context;
 	InetAddress host;
 	int port;
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
+	@Before
+	public void setUp() throws Exception {
 		register = new ClientRegisterImpl();
 		context = new Mockery();
 		host = InetAddress.getByName("10.10.10.10");
@@ -35,11 +38,13 @@ public class TestClientRegisterImpl extends TestCase {
 	 * 
 	 * add, contains, remove, contains
 	 */
+	@Test
 	public void testRegister() throws ClientAlreadyRegisteredException {
 		register.register(host, port);
 		context.assertIsSatisfied();
 	}
 
+	@Test
 	public void testRegisterWithRequest()
 			throws ClientAlreadyRegisteredException {
 		final Request req = context.mock(Request.class);
@@ -55,13 +60,14 @@ public class TestClientRegisterImpl extends TestCase {
 		context.assertIsSatisfied();
 	}
 
+	@Test
 	public void testUnregister() throws ClientAlreadyRegisteredException,
 			ClientNotRegisteredException {
 		register.register(host, port);
 		register.unregister(host, port);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testUnregisterWithRequest()
 			throws ClientAlreadyRegisteredException,
 			ClientNotRegisteredException {
@@ -78,7 +84,7 @@ public class TestClientRegisterImpl extends TestCase {
 		register.unregister(req);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testDoubleRegister() throws ClientAlreadyRegisteredException {
 		register.register(host, port);
 		boolean exception = false;
@@ -90,7 +96,7 @@ public class TestClientRegisterImpl extends TestCase {
 		assertTrue(exception);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testDoubleRegisterUsingRequest()
 			throws ClientAlreadyRegisteredException {
 		final Request req = context.mock(Request.class);
@@ -112,7 +118,7 @@ public class TestClientRegisterImpl extends TestCase {
 		assertTrue(exception);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testNoClientUnregister() {
 		boolean exception = false;
 		try {
@@ -123,7 +129,7 @@ public class TestClientRegisterImpl extends TestCase {
 		assertTrue(exception);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testNoClientUnregisterUsingRequest() {
 		final Request req = context.mock(Request.class);
 		context.checking(new Expectations() {
@@ -143,12 +149,12 @@ public class TestClientRegisterImpl extends TestCase {
 		assertTrue(exception);
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testFalseContains() {
 		assertFalse(register.contains(host, port));
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testFalseContainsUsingRequest() {
 		final Request req = context.mock(Request.class);
 		context.checking(new Expectations() {
@@ -162,13 +168,13 @@ public class TestClientRegisterImpl extends TestCase {
 		assertFalse(register.contains(req));
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testTrueContains() throws ClientAlreadyRegisteredException {
 		register.register(host, port);
 		assertTrue(register.contains(host, port));
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testTrueContainsWithRequest()
 			throws ClientAlreadyRegisteredException {
 		final Request req = context.mock(Request.class);
@@ -184,7 +190,7 @@ public class TestClientRegisterImpl extends TestCase {
 		assertTrue(register.contains(req));
 		context.assertIsSatisfied();
 	}
-	
+	@Test
 	public void testAdd_Contains_Remove_Contains()
 			throws ClientAlreadyRegisteredException,
 			ClientNotRegisteredException {
@@ -194,7 +200,7 @@ public class TestClientRegisterImpl extends TestCase {
 		assertFalse(register.contains(host, port));
 		context.assertIsSatisfied();
 	}
-
+	@Test
 	public void testAdd_Contains_Remove_ContainsWithRequest()
 			throws ClientAlreadyRegisteredException,
 			ClientNotRegisteredException {
@@ -213,8 +219,9 @@ public class TestClientRegisterImpl extends TestCase {
 		assertFalse(register.contains(req));
 		context.assertIsSatisfied();
 	}
-	
-	public void testAddAddRemove() throws ClientAlreadyRegisteredException, ClientNotRegisteredException {
+	@Test
+	public void testAddAddRemove() throws ClientAlreadyRegisteredException,
+			ClientNotRegisteredException {
 		register.register(host, port);
 		boolean exception = false;
 		try {
@@ -224,11 +231,12 @@ public class TestClientRegisterImpl extends TestCase {
 		}
 		assertTrue(exception);
 		register.unregister(host, port);
-		context.assertIsSatisfied();	
+		context.assertIsSatisfied();
 	}
-
-	
-	public void testAddAddRemoveWithRequest() throws ClientAlreadyRegisteredException, ClientNotRegisteredException {
+	@Test
+	public void testAddAddRemoveWithRequest()
+			throws ClientAlreadyRegisteredException,
+			ClientNotRegisteredException {
 		final Request req = context.mock(Request.class);
 		context.checking(new Expectations() {
 			{
@@ -247,8 +255,7 @@ public class TestClientRegisterImpl extends TestCase {
 		}
 		assertTrue(exception);
 		register.unregister(req);
-		context.assertIsSatisfied();	
+		context.assertIsSatisfied();
 	}
-	
-	
+
 }

@@ -7,12 +7,12 @@ import org.apache.commons.net.tftp.TFTPRequestPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import slighltysain.jvtftp.request.Request;
-import slighltysain.jvtftp.request.RequestImpl;
-import slighltysain.jvtftp.request.UnknownRequestTypeException;
-import slighltysain.jvtftp.request.router.RequestRouter;
-import slightlysain.jvtftp.session.Session;
-import slightlysain.jvtftp.session.SessionImpl;
+import slightlysain.jvtftp.request.Request;
+import slightlysain.jvtftp.request.RequestAbstract;
+import slightlysain.jvtftp.request.UnknownRequestTypeException;
+import slightlysain.jvtftp.request.router.RequestRouter;
+import slightlysain.jvtftp.session.SessionController;
+import slightlysain.jvtftp.session.SessionControllerImpl;
 
 /**
  * responsible for the handling of requests. A thread will be allocated to the
@@ -23,107 +23,55 @@ import slightlysain.jvtftp.session.SessionImpl;
  */
 public class ServerRequestHandler implements Runnable {
 
-	private TFTPPacket initPacket;
-	private TFTPRequestPacket requestPacket;
+	private Request request;
 	private ClientRegister clientRegister;
 	private ExecutorService executorService;
 	private RequestRouter requestRouter;
-	private Session session;
-	private boolean abort = false;
 
-	Logger log = LoggerFactory.getLogger(this.getClass());
+	Logger log = LoggerFactory.getLogger(getClass());
 
-	public ServerRequestHandler(TFTPPacket packet,
+	public ServerRequestHandler(Request request,
 			ClientRegister aNewClientsRegister,
-			ExecutorService aNewExecutorService, RequestRouter aNewRequestRouter) {
-		this.initPacket = packet;
+			ExecutorService aNewExecutorService, RequestRouter aNewRequestRouter)
+			throws ClientAlreadyRegisteredException {
 		this.clientRegister = aNewClientsRegister;
 		this.executorService = aNewExecutorService;
 		this.requestRouter = aNewRequestRouter;
-		log.debug("new server request handler created");
-		if (isRequestPacket()) {
-			requestPacket = (TFTPRequestPacket) initPacket;
+		this.request = request;
+		if (clientRegister.contains(request)) {
+			log.info("client " + request.getAddress().getHostAddress()
+					+ "'s request for file:" + request.getFilename()
+					+ " is already being handled");
 		} else {
-			log.error("packet is not a requestPacket" + initPacket.getAddress()
-					+ ":" + initPacket.getPort());
-			abort = true;
-			return;
+			clientRegister.register(request);
+			executorService.execute(this);
 		}
-		if (sessionAlreadyExists()) {
-			log.debug("Session already exists for:"
-					+ requestPacket.getAddress() + ":"
-					+ requestPacket.getPort());
-			return;
-		}
-		executorService.execute(this);
 	}
 
 	public void run() {
-
-		if (abort) {
-			log.error("request aborted");
-			return;
-		}
-		log.trace("Running new instance of ServerRequestHandler for:"
-				+ initPacket.getAddress() + ":" + initPacket.getPort());
-		if (sessionAlreadyExists()) {
-			log.debug("Session already exists for:"
-					+ requestPacket.getAddress() + ":"
-					+ requestPacket.getPort());
-			return;
-		} else {
-			log.debug("handling request");
-			handleServerRequest();
-		}
-		log.trace("ending server request handler");
-	}
-
-	private boolean sessionAlreadyExists() {
-		return clientRegister.contains(requestPacket.getAddress(),
-				requestPacket.getPort());
-	}
-
-	private boolean isRequestPacket() {
-		int packetType = initPacket.getType();
-		return (TFTPPacket.READ_REQUEST == packetType || TFTPPacket.WRITE_REQUEST == packetType);
+		handleServerRequest();
 	}
 
 	private void handleServerRequest() {
-		if (!addSession()) {
-			log.debug("Could not register client :"
-					+ requestPacket.getAddress() + ":"
-					+ requestPacket.getPort());
-			return;
-		}
 		try {
-			routeRequest();
+			requestRouter.makeRequest(request);
 		} catch (UnknownRequestTypeException e) {
 			log.error("Request type is not known", e);
-		} finally {
-			removeSession();
+		} catch (Exception e) {
+			log.error("exception caught when making request", e);
+		}
+		try {
+			clientRegister.unregister(request);
+		} catch (ClientNotRegisteredException e) {
+			log.error("Client is not currently registered!", e);
 		}
 	}
 
-	private void removeSession() {
-		log.debug("removed session :" + requestPacket.getAddress() + ":"
-				+ requestPacket.getPort());
-		clientRegister.unregister(requestPacket.getAddress(),
-				requestPacket.getPort());
-	}
-
-	private boolean addSession() {
-		log.debug("added session to register:" + requestPacket.getAddress()
-				+ ":" + requestPacket.getPort());
-		return clientRegister.register(requestPacket.getAddress(),
-				requestPacket.getPort());
-	}
-
-	private void routeRequest() throws UnknownRequestTypeException {
-		Request request = new RequestImpl(requestPacket);
-		session = new SessionImpl(requestPacket.getAddress(),
-				requestPacket.getPort(), request);
-		executorService.execute((Runnable) session);
-		requestRouter.makeRequest(request);
-		request.waitForClosedSession();
-	}
+	// private void routeRequest() throws UnknownRequestTypeException {
+	//
+	// // session = new SessionImpl(requestPacket.getAddress(),
+	// // requestPacket.getPort(), request);
+	// // executorService.execute((Runnable) session);
+	// // requestRouter.makeRequest(request);
+	// }
 }

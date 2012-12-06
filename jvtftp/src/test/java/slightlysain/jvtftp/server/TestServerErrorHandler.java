@@ -35,15 +35,19 @@ public class TestServerErrorHandler extends TestCase {
 
 		final CatchInstanceAction<LoggingEvent> catchLogEvent = new CatchInstanceAction<LoggingEvent>();
 		final Appender append = context.mock(Appender.class);
-		context.checking(new Expectations() {{
-			//oneOf(append).getName(); will(returnValue("MOCK"));
-			oneOf(append).doAppend(with(any(LoggingEvent.class))); will(catchLogEvent);
-		}});
+		context.checking(new Expectations() {
+			{
+				// oneOf(append).getName(); will(returnValue("MOCK"));
+				oneOf(append).doAppend(with(any(LoggingEvent.class)));
+				will(catchLogEvent);
+			}
+		});
 		root.addAppender(append);
 		ServerErrorHandler h = new ServerErrorHandler(p);
 		String message = catchLogEvent.getInstance().getFormattedMessage();
 		assertTrue(message.contains("error"));
 		context.assertIsSatisfied();
+		root.detachAppender(append);
 	}
 
 }

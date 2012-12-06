@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.junit.Test;
 
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
@@ -14,7 +15,7 @@ import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.mock.CatchInstanceAction;
 import junit.framework.TestCase;
 
-public class TestServerRequestHandler extends TestCase {
+public class TestServerRequestHandler {
 
 	Mockery context;
 	ServerRequestHandler requestHandler;
@@ -32,6 +33,7 @@ public class TestServerRequestHandler extends TestCase {
 
 	}
 
+	@Test
 	public void testClientRegisterEmpty()
 			throws ClientAlreadyRegisteredException {
 		createMocks();
@@ -49,6 +51,7 @@ public class TestServerRequestHandler extends TestCase {
 		context.assertIsSatisfied();
 	}
 
+	@Test
 	public void testClientRegisterHasRequest() throws UnknownHostException,
 			ClientAlreadyRegisteredException {
 		createMocks();
@@ -76,6 +79,7 @@ public class TestServerRequestHandler extends TestCase {
 		context.assertIsSatisfied();
 	}
 
+	@Test
 	public void testRunMethod() throws UnknownHostException,
 			UnknownRequestTypeException, ClientAlreadyRegisteredException, ClientNotRegisteredException {
 		createMocks();

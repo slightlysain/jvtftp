@@ -2,6 +2,10 @@ package slightlysain.jvtftp.request.router;
 
 public class CouldNotLoadScriptException extends Exception {
 
+	public CouldNotLoadScriptException(String string) {
+		super(string);
+	}
+
 	/**
 	 * 
 	 */

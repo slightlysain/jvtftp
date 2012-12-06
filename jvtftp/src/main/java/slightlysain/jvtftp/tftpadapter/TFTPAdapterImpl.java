@@ -22,29 +22,40 @@ public class TFTPAdapterImpl implements TFTPAdapter {
 	private OnPacketHandler packetHandler;
 	private OnTimeoutHandler timeoutHandler;
 
-	Logger LOG = LoggerFactory.getLogger(TFTPAdapterImpl.class);
+	private Logger log = LoggerFactory.getLogger(TFTPAdapterImpl.class);
 
 	public TFTPAdapterImpl() {
 		packetHandler = new NullPacketHandler();
 		timeoutHandler = new NullTimeoutHandler();
 	}
-	
-	/* (non-Javadoc)
-	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#setPacketHandler(slightlysain.jvtftp.tftpadapter.OnPacketHandler)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * slightlysain.jvtftp.tftpadapter.TFTPAdapter#setPacketHandler(slightlysain
+	 * .jvtftp.tftpadapter.OnPacketHandler)
 	 */
 	public void setPacketHandler(OnPacketHandler packetHandler) {
 		this.packetHandler = packetHandler;
 	}
-	
-	/* (non-Javadoc)
-	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#setTimeoutHandler(slightlysain.jvtftp.tftpadapter.OnTimeoutHandler)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * slightlysain.jvtftp.tftpadapter.TFTPAdapter#setTimeoutHandler(slightlysain
+	 * .jvtftp.tftpadapter.OnTimeoutHandler)
 	 */
 	public void setTimeoutHandler(OnTimeoutHandler timeoutHandler) {
 		this.timeoutHandler = timeoutHandler;
 	}
 
-	/* (non-Javadoc)
-	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendDataPacket(java.net.InetAddress, int, byte[], int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendDataPacket(java.net.
+	 * InetAddress, int, byte[], int)
 	 */
 	public void sendDataPacket(InetAddress clientAddress, int port, byte[] by,
 			int block) throws IOException {
@@ -53,8 +64,12 @@ public class TFTPAdapterImpl implements TFTPAdapter {
 		tftp.send(datapacket);
 	}
 
-	/* (non-Javadoc)
-	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendErrorPacket(java.net.InetAddress, int, int, java.lang.String)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendErrorPacket(java.net.
+	 * InetAddress, int, int, java.lang.String)
 	 */
 	public void sendErrorPacket(InetAddress clientAddress, int port, int code,
 			String msg) throws IOException {
@@ -63,8 +78,11 @@ public class TFTPAdapterImpl implements TFTPAdapter {
 		tftp.send(errorpacket);
 	}
 
-	/* (non-Javadoc)
-	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendAckPacket(java.net.InetAddress, int, int)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#sendAckPacket(java.net.
+	 * InetAddress, int, int)
 	 */
 	public void sendAckPacket(InetAddress clientAddress, int port, int block)
 			throws IOException {
@@ -72,35 +90,46 @@ public class TFTPAdapterImpl implements TFTPAdapter {
 		tftp.send(ackpacket);
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#isOpen()
 	 */
 	public boolean isOpen() {
 		return tftp.isOpen();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#open(int)
 	 */
 	public void open(int port) throws SocketException {
 		tftp.open(port);
-		LOG.info("port bind on " + tftp.getLocalPort());
+		log.info("port bind on " + tftp.getLocalPort());
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#close()
 	 */
 	public void close() {
-		exit = true;
-		tftp.close();
-		LOG.trace("packet adapter closed");
+		if (!exit) {
+			exit = true;
+			log.info("port unbind on " + tftp.getLocalPort());
+			tftp.close();
+		} else {
+			log.error("TFTPAdapter already closed");
+		}
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.tftpadapter.TFTPAdapter#listen()
 	 */
-	public void listen() throws IOException,
-			TFTPPacketException {
+	public void listen() throws IOException, TFTPPacketException {
 		packet = null;
 		// accept incoming packets
 		while (!exit) {
