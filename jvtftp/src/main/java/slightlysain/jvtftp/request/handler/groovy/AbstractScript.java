@@ -3,6 +3,7 @@ package slightlysain.jvtftp.request.handler.groovy;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.RequestHandler;
+import slightlysain.jvtftp.streamfactory.StreamFactory;
 import groovy.lang.Closure;
 import groovy.lang.Script;
 
@@ -24,39 +26,19 @@ public abstract class AbstractScript extends Script {
 	private GroovyRequestHandler handler;
 	private PrintStream out = System.out;
 	private boolean setup = false;
+	private StreamFactory streamFactory;
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
-//	public AbstractGroovyRequestScript() {}
-//	
-//	
-//	public AbstractGroovyRequestScript(Request r, GroovyRequestHandler hand) {
-//		// use for dependency injection when testing
-//		request = r;
-//		handler = hand;
-//		setup = true;
-//	}
-	
-	private void setBinding() {
-		binding = (RequestHandlerBinding) getBinding();
-	}
-
-	private void setRequest() {
-		request = binding.getRequest();
-	}
-
-	private void setHandler() {
-		handler = binding.getHandler();
-	}
 
 	private void setup() {
-		if(!setup) {
-			setBinding();
-			setRequest();
-			setHandler();
+		if (!setup) {
+			binding = (RequestHandlerBinding) getBinding();
+			request = binding.getRequest();
+			handler = binding.getHandler();
+			streamFactory = binding.getStreamFactory();
 			setup = true;
 		}
 	}
-	
+
 	private void setHandled() {
 		binding.setHandled(true);
 	}
@@ -92,15 +74,14 @@ public abstract class AbstractScript extends Script {
 	}
 
 	public void accept() {
-		setup();	
+		setup();
 	}
 
-	public void accept(String filename) {
-		System.out.println("accepted");
+	private void sendAccept(String filename) {
 		setup();
-		FileInputStream fis = null;
+		InputStream fis = null;
 		try {
-			fis = new FileInputStream(filename);
+			fis = streamFactory.getFileInputStream(filename);
 		} catch (FileNotFoundException e) {
 			log.error("could not find file");
 			e.printStackTrace();
@@ -108,24 +89,64 @@ public abstract class AbstractScript extends Script {
 		handler.accept(fis, request);
 		setHandled();
 	}
-	
-	public void accept(Closure<?> clos) {
+
+	private void recieveAccept(String filename) {
+		setup();
+		OutputStream fos = null;
+		try {
+			fos = streamFactory.getFileOutputStream(filename);
+		} catch (FileNotFoundException e) {
+			log.error("could not find file");
+			e.printStackTrace();
+		}
+		handler.accept(fos, request);
+		setHandled();
+	}
+
+	public void sendAccept(Closure<?> clos) throws IOException {
 		setup();
 		PrintStream tmp = out;
 		PipedOutputStream outputStream = new PipedOutputStream();
-		try {
-			PipedInputStream  inputStream = new PipedInputStream(outputStream);
-			out = new PrintStream(outputStream);
-			clos.call();
-			out.close();
-			outputStream.close();
-			out = tmp;
-			handler.accept(inputStream, request);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		PipedInputStream inputStream = new PipedInputStream(outputStream);
+		out = new PrintStream(outputStream);
+		clos.call();
+		out.close();
+		outputStream.close();
+		out = tmp;
+		handler.accept(inputStream, request);
 		setHandled();
+	}
+
+	public void recieveAccept(Closure<?> clos) throws IOException {
+		setup();
+		PipedOutputStream outputStream = new PipedOutputStream();
+		InputStream in = new PipedInputStream(outputStream);
+		handler.accept(outputStream, request);
+		clos.call(in);
+		in.close();
+		outputStream.close();
+	}
+
+	public void accept(Closure<?> clos) throws IOException {
+		setup();
+		if (request.isRead()) {
+			sendAccept(clos);
+		} else if (request.isWrite()) {
+			recieveAccept(clos);
+		} else {
+			log.error("Bad request recieved");
+		}
+	}
+
+	public void accept(String filename) {
+		setup();
+		if (request.isRead()) {
+			sendAccept(filename);
+		} else if (request.isWrite()) {
+			recieveAccept(filename);
+		} else {
+			log.error("Bad request recieved");
+		}
 	}
 
 	public void deny() {
@@ -135,7 +156,7 @@ public abstract class AbstractScript extends Script {
 	}
 
 	public void deny(int error, String message) {
-		setup();	
+		setup();
 		handler.deny(request, error, message);
 		setHandled();
 	}

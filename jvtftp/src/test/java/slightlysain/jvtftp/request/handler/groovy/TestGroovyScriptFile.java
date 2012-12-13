@@ -29,6 +29,7 @@ import slightlysain.jvtftp.request.handler.NoPriorityException;
 import slightlysain.jvtftp.request.handler.RequestHandler;
 import slightlysain.jvtftp.request.router.RequestHandlerPriority;
 import slightlysain.mock.DummyRequest;
+import slightlysain.mock.MockStreamFactory;
 
 import static slightlysain.jvtftp.request.router.RequestHandlerPriority.*;
 
@@ -169,7 +170,8 @@ public class TestGroovyScriptFile {
 			}
 		};
 		DummyRequest dreq = new DummyRequest();
-		Binding binding = new RequestHandlerBinding(dreq, null, scriptOutput);
+		MockStreamFactory mockStreamFactory = new MockStreamFactory(outputStream, null);
+		Binding binding = new RequestHandlerBinding(dreq, null, mockStreamFactory);
 		//binding.setVariable("request", dreq);
 		//binding.setVariable("handler", hand);
 		
@@ -179,7 +181,7 @@ public class TestGroovyScriptFile {
 		newScriptFile(filecontent);
 		scriptFile.run(binding);
 		//scriptOutput.println(TEST_STRING + "\n");
-		scriptOutput.close();
+		outputStream.close();
 		
 		String line = "";
 		if(scriptScanner.hasNext()) {

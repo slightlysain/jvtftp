@@ -3,51 +3,50 @@ package slightlysain.jvtftp.request.handler.groovy;
 import java.io.PrintWriter;
 
 import slightlysain.jvtftp.request.Request;
+import slightlysain.jvtftp.streamfactory.StreamFactory;
 import groovy.lang.Binding;
 
 public class RequestHandlerBinding extends Binding {
 	private Request request;
 	private GroovyRequestHandler handler;
-	private PrintWriter out;
+	private StreamFactory streamFactory;
 	private boolean handled;
-	
-	public PrintWriter getOut() {
-		return out;
+
+	public RequestHandlerBinding(Request r, GroovyRequestHandler h,
+			StreamFactory streamFactory) {
+		this.request = r;
+		this.handler = h;
+		this.handled = false;
+		this.streamFactory = streamFactory;
 	}
 
-	public RequestHandlerBinding(Request r, GroovyRequestHandler h, PrintWriter out) {
-		request = r;
-		handler = h;
-		this.out = out;
-		handled = false;
-	}
-	public RequestHandlerBinding(Request r, GroovyRequestHandler h) {
-		out = new PrintWriter(System.out);
+	public StreamFactory getStreamFactory() {
+		return streamFactory;
 	}
 
 	public Request getRequest() {
 		return request;
 	}
-	
+
 	public GroovyRequestHandler getHandler() {
 		return handler;
 	}
-	
+
 	public boolean hasHandled() {
 		return handled;
 	}
-	
+
 	public void setHandled(boolean handled) {
 		this.handled = handled;
 	}
-	
+
 	@Override
 	public Object getVariable(String name) {
 		if (name.equals("request")) {
 			return request;
 		} else if (name.equals("handler")) {
 			return handler;
-		} else if(name.equals("getpriority")) {
+		} else if (name.equals("getpriority")) {
 			return false;
 		} else {
 			return super.getVariable(name);

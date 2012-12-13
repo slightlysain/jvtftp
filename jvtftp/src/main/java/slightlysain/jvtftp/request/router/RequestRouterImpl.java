@@ -28,6 +28,7 @@ import slightlysain.jvtftp.request.handler.groovy.PriorityCommentNotFoundExcepti
 import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionControllerImpl;
 import slightlysain.jvtftp.session.SessionFactory;
+import slightlysain.jvtftp.streamfactory.StreamFactory;
 
 public class RequestRouterImpl implements RequestRouter {
 
@@ -43,15 +44,16 @@ public class RequestRouterImpl implements RequestRouter {
 	private Map<String, RequestHandler> loadedScripts = new ConcurrentHashMap<String, RequestHandler>();
 	private GroovyScriptEngine scriptengine;
 	private SessionFactory sessionFactory;
-
+	private StreamFactory streamFactory;
 	private static Logger log = LoggerFactory
 			.getLogger(RequestRouterImpl.class);
 
 	/*------------------------------------constructor--------------------------------*/
 	public RequestRouterImpl(GroovyScriptEngine scriptengine,
-			SessionFactory sessionFactory) {
+			SessionFactory sessionFactory, StreamFactory streamFactory) {
 		this.scriptengine = scriptengine;
 		this.sessionFactory = sessionFactory;
+		this.streamFactory = streamFactory;
 		handlerChains = new ConcurrentHashMap<RequestHandlerPriority, RequestHandlerChain>();
 		handlerSets = new ConcurrentHashMap<RequestHandlerPriority, Set<RequestHandler>>();
 		RequestHandlerPriority[] priorities = RequestHandlerPriority.values();
@@ -93,7 +95,7 @@ public class RequestRouterImpl implements RequestRouter {
 			InvalidPriorityCommentException, FileNotFoundException {
 		GroovyScriptFile scriptFile = new GroovyScriptFileImpl(scriptengine,
 				script);
-		return new GroovyRequestHandler(scriptFile, sessionFactory, this);
+		return new GroovyRequestHandler(scriptFile, sessionFactory, this, streamFactory);
 	}
 
 	/*--------------------------------------------public----------------------------------*/
