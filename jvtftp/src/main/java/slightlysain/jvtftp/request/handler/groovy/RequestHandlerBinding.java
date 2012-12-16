@@ -3,7 +3,7 @@ package slightlysain.jvtftp.request.handler.groovy;
 import java.io.PrintWriter;
 
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.streamfactory.StreamFactory;
+import slightlysain.jvtftp.stream.StreamFactory;
 import groovy.lang.Binding;
 
 public class RequestHandlerBinding extends Binding {
@@ -48,6 +48,8 @@ public class RequestHandlerBinding extends Binding {
 			return handler;
 		} else if (name.equals("getpriority")) {
 			return false;
+		} else if(name.equals("streamFactory")) {
+			return streamFactory;
 		} else {
 			return super.getVariable(name);
 		}

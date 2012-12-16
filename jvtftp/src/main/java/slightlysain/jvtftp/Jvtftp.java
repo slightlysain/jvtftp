@@ -29,8 +29,8 @@ import slightlysain.jvtftp.server.ClientRegisterImpl;
 import slightlysain.jvtftp.server.Server;
 import slightlysain.jvtftp.session.SessionFactory;
 import slightlysain.jvtftp.session.SessionFactoryImpl;
-import slightlysain.jvtftp.streamfactory.StreamFactory;
-import slightlysain.jvtftp.streamfactory.StreamFactoryImpl;
+import slightlysain.jvtftp.stream.StreamFactory;
+import slightlysain.jvtftp.stream.StreamFactoryImpl;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
 
@@ -114,10 +114,10 @@ public class Jvtftp {
 		RequestRouter requestRouter = new RequestRouterImpl(engine,
 				sessionFactory, streamFactory);
 		String scripts = getProperty(STARTSCRIPTS_KEY);
-		if (null != scripts) {
+		if (null != scripts && scripts.length() > 0) {
 			String[] allscripts = scripts.split(",");
 			for (String script : allscripts) {
-				//System.out.println("script:" + s);
+				//System.out.println("script:" + script + ".");
 				loadScript(requestRouter, script);
 			}
 		} else {

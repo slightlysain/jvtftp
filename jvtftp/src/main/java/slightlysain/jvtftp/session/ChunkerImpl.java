@@ -47,7 +47,7 @@ public class ChunkerImpl implements Chunker {
 		} while (remaining > 0);
 		if(eof) {
 			bytes = Arrays.copyOf(bytes, offset);
-		}
+		}			
 		return bytes;
 	}
 

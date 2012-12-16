@@ -14,13 +14,13 @@ import org.slf4j.LoggerFactory;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.AbstractRequestHandler;
 import slightlysain.jvtftp.request.handler.NoPriorityException;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 import slightlysain.jvtftp.request.router.CouldNotRemoveScriptException;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
 import slightlysain.jvtftp.request.router.RequestRouter;
 import slightlysain.jvtftp.request.router.ScriptNotAlreadyLoadedException;
 import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionFactory;
-import slightlysain.jvtftp.streamfactory.StreamFactory;
+import slightlysain.jvtftp.stream.StreamFactory;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
 

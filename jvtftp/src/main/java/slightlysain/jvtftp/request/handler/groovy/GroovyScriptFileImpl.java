@@ -15,7 +15,7 @@ import java.util.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 
 public class GroovyScriptFileImpl implements GroovyScriptFile {
 	private URL[] roots;

@@ -3,7 +3,7 @@ package slightlysain.jvtftp.request.chain;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.NoPriorityException;
 import slightlysain.jvtftp.request.handler.RequestHandler;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 
 final class NextChainRequestHandler implements RequestHandler {
 	private RequestHandlerChain nextChain;

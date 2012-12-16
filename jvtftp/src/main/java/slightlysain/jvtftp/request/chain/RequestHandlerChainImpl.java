@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.RequestHandler;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 
 public class RequestHandlerChainImpl implements RequestHandlerChain {
 	private Set<RequestHandler> handlerSet;

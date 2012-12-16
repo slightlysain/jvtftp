@@ -12,6 +12,8 @@ import org.apache.commons.net.tftp.TFTPPacketException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import slightlysain.jvtftp.io.JvtftpFromNetASCIIOutputStream;
+import slightlysain.jvtftp.io.JvtftpToNetASCIIInputStream;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactory;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactoryImpl;
 import slightlysain.jvtftp.request.Request;
@@ -48,10 +50,13 @@ public class SessionControllerImpl implements SessionController {
 	}
 
 	public void send(InputStream in) {
+		InputStream chunkerIn;
 		if (request.isNetASCII()) {
-			in = new ToNetASCIIInputStream(in);
+			chunkerIn = new JvtftpToNetASCIIInputStream(in);
+		} else {
+			chunkerIn = in;
 		}
-		Chunker chunker = factory.createChunker(in);
+		Chunker chunker = factory.createChunker(chunkerIn);
 		Session session = factory.createSendSession(adapter, clientAddress,
 				port, chunker);
 		try {
@@ -67,7 +72,7 @@ public class SessionControllerImpl implements SessionController {
 
 	public void recieve(OutputStream out) {
 		if (request.isNetASCII()) {
-			out = new FromNetASCIIOutputStream(out);
+			out = new JvtftpFromNetASCIIOutputStream(out);
 		}
 		Session session = factory.createRecieveSession(clientAddress, port,
 				adapter, out);

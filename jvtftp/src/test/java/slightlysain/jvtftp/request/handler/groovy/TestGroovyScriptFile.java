@@ -27,11 +27,11 @@ import org.junit.Test;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.NoPriorityException;
 import slightlysain.jvtftp.request.handler.RequestHandler;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 import slightlysain.mock.DummyRequest;
 import slightlysain.mock.MockStreamFactory;
 
-import static slightlysain.jvtftp.request.router.RequestHandlerPriority.*;
+import static slightlysain.jvtftp.request.handler.RequestHandlerPriority.*;
 
 public class TestGroovyScriptFile {
 	private GroovyScriptEngine groovyScriptEngine;

@@ -1,9 +1,10 @@
 package slightlysain.mock;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import slightlysain.jvtftp.streamfactory.StreamFactory;;
+import slightlysain.jvtftp.stream.StreamFactory;
 
 public class MockStreamFactory implements StreamFactory {
 	OutputStream out;
@@ -26,6 +27,16 @@ public class MockStreamFactory implements StreamFactory {
 			throws FileNotFoundException {
 		// TODO Auto-generated method stub
 		return out;
+	}
+
+	public File getOutputFile(String filename) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public File getInputFile(String filename) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -14,12 +14,13 @@ import slightlysain.jvtftp.session.Chunker;
 public class TestChunker {
 
 	Chunker chunker;
+	byte[] bytes;
 	
 	private ByteArrayInputStream createStream(final int size) {
-		byte[] b = new byte[size];
+		bytes = new byte[size];
 		Random rand = new Random();
-		rand.nextBytes(b);
-		return new ByteArrayInputStream(b);
+		rand.nextBytes(bytes);
+		return new ByteArrayInputStream(bytes);
 	}
 	
 	@Test(expected=NullPointerException.class)
@@ -62,5 +63,26 @@ public class TestChunker {
 		assertTrue(chunker.hasNextByte());
 		assertEquals(count - 512, chunker.getNext().length);
 		assertFalse(chunker.hasNextByte());
+	}
+	
+	@Test
+	public void test_LargeStream() throws IOException {
+		int count = 2070;
+		byte[] testbytes = new byte[count];
+		chunker = new ChunkerImpl(createStream(count));
+		//Arrays.
+		int pos = 0;
+		while(chunker.hasNextByte()) {
+			byte[] b = chunker.getNext();
+			System.out.println("----chunker b.l" + b.length);
+			for(int i=0; i < b.length; i++) {
+				//System.out.println("pos + i" + (pos + i));
+				testbytes[pos + i] = b[i];
+			}
+			pos += b.length;
+			System.out.println("----pos" + pos);
+		}
+		assertFalse(chunker.hasNextByte());
+		assertArrayEquals(bytes, testbytes);
 	}
 }

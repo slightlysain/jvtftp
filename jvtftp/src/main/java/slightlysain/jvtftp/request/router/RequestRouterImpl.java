@@ -16,10 +16,12 @@ import org.slf4j.LoggerFactory;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.RequestAbstract;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
+import slightlysain.jvtftp.request.chain.DenyRequestHandlerChain;
 import slightlysain.jvtftp.request.chain.RequestHandlerChain;
 import slightlysain.jvtftp.request.chain.RequestHandlerChainImpl;
 import slightlysain.jvtftp.request.handler.NoPriorityException;
 import slightlysain.jvtftp.request.handler.RequestHandler;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 import slightlysain.jvtftp.request.handler.groovy.GroovyRequestHandler;
 import slightlysain.jvtftp.request.handler.groovy.GroovyScriptFile;
 import slightlysain.jvtftp.request.handler.groovy.GroovyScriptFileImpl;
@@ -28,7 +30,7 @@ import slightlysain.jvtftp.request.handler.groovy.PriorityCommentNotFoundExcepti
 import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionControllerImpl;
 import slightlysain.jvtftp.session.SessionFactory;
-import slightlysain.jvtftp.streamfactory.StreamFactory;
+import slightlysain.jvtftp.stream.StreamFactory;
 
 public class RequestRouterImpl implements RequestRouter {
 
@@ -70,6 +72,9 @@ public class RequestRouterImpl implements RequestRouter {
 			Set<RequestHandler> set = new CopyOnWriteArraySet<RequestHandler>();
 			handlerSets.put(p, set);
 			chain.set(set);
+			if(p == RequestHandlerPriority.LOW_COMMAND) {
+				chain.setNextChain(new DenyRequestHandlerChain(sessionFactory));
+			}
 			handlerChains.put(p, chain);
 		}
 	}

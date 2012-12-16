@@ -1,7 +1,6 @@
 package slightlysain.jvtftp.request.handler;
 
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
 
 public interface RequestHandler {
 	public abstract RequestHandlerPriority getPriority() throws NoPriorityException;

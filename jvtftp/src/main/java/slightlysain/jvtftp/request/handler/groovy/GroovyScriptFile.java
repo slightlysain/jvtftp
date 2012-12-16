@@ -4,7 +4,7 @@ import groovy.lang.Binding;
 import groovy.util.GroovyScriptEngine;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
-import slightlysain.jvtftp.request.router.RequestHandlerPriority;
+import slightlysain.jvtftp.request.handler.RequestHandlerPriority;
 
 public interface GroovyScriptFile {
 

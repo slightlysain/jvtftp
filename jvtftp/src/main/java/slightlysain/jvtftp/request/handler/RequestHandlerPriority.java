@@ -1,4 +1,4 @@
-package slightlysain.jvtftp.request.router;
+package slightlysain.jvtftp.request.handler;
 
 public enum RequestHandlerPriority {
 	LOW_COMMAND, 
