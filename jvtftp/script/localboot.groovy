@@ -1,10 +1,12 @@
 import slightlysain.mac.*;
-//priority LOW_COMMAND
+//priority BOOT_COMMAND
+
+//println registry.get("test")
+
 if(request.isRead()) {
 	filename = request.getFilename()
 	MACMatcher match = new MACMatcher(filename)
 	if(match.matches()) {
-		println "match"
 		accept() {
 			println "DEFAULT local"
 			println "LABEL local"

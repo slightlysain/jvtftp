@@ -31,6 +31,7 @@ import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionControllerImpl;
 import slightlysain.jvtftp.session.SessionFactory;
 import slightlysain.jvtftp.stream.StreamFactory;
+import slightlysain.registry.Registry;
 
 public class RequestRouterImpl implements RequestRouter {
 
@@ -49,13 +50,16 @@ public class RequestRouterImpl implements RequestRouter {
 	private StreamFactory streamFactory;
 	private static Logger log = LoggerFactory
 			.getLogger(RequestRouterImpl.class);
+	private Registry registry;
 
 	/*------------------------------------constructor--------------------------------*/
 	public RequestRouterImpl(GroovyScriptEngine scriptengine,
-			SessionFactory sessionFactory, StreamFactory streamFactory) {
+			SessionFactory sessionFactory, StreamFactory streamFactory,
+			Registry registry) {
 		this.scriptengine = scriptengine;
 		this.sessionFactory = sessionFactory;
 		this.streamFactory = streamFactory;
+		this.registry = registry;
 		handlerChains = new ConcurrentHashMap<RequestHandlerPriority, RequestHandlerChain>();
 		handlerSets = new ConcurrentHashMap<RequestHandlerPriority, Set<RequestHandler>>();
 		RequestHandlerPriority[] priorities = RequestHandlerPriority.values();
@@ -72,7 +76,7 @@ public class RequestRouterImpl implements RequestRouter {
 			Set<RequestHandler> set = new CopyOnWriteArraySet<RequestHandler>();
 			handlerSets.put(p, set);
 			chain.set(set);
-			if(p == RequestHandlerPriority.LOW_COMMAND) {
+			if (p == RequestHandlerPriority.LOW_COMMAND) {
 				chain.setNextChain(new DenyRequestHandlerChain(sessionFactory));
 			}
 			handlerChains.put(p, chain);
@@ -100,7 +104,8 @@ public class RequestRouterImpl implements RequestRouter {
 			InvalidPriorityCommentException, FileNotFoundException {
 		GroovyScriptFile scriptFile = new GroovyScriptFileImpl(scriptengine,
 				script);
-		return new GroovyRequestHandler(scriptFile, sessionFactory, this, streamFactory);
+		return new GroovyRequestHandler(scriptFile, sessionFactory, this,
+				streamFactory, registry);
 	}
 
 	/*--------------------------------------------public----------------------------------*/

@@ -1,14 +1,18 @@
-//priority BOOT_COMMAND
+//priority INSTALL_COMMAND
 import slightlysain.initrd.*;
 import slightlysain.mac.*;
 
-String[] installMacs[] = { "" }
+def installMACs = [ ]
+
+if(registry.contains("installMACs")) {
+	installMACs = registry.get("installMACs")
+}
 
 if(request.isRead()) {
 	filename = request.getFilename()
 	matcher = new MACMatcher(filename)
 	if(matcher.matches()) {
-		if(matcher.getMAC().equals(installMacs[0])) {
+		if(installMACs.contains(matcher.getMAC())) {
 		accept() {
 			println "DEFAULT installubuntu"
 			println "LABEL installubuntu"

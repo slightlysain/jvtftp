@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,6 +17,8 @@ import org.apache.commons.net.tftp.TFTPPacketException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.iterative.groovy.service.GroovyShellService;
 
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactory;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactoryImpl;
@@ -33,6 +37,7 @@ import slightlysain.jvtftp.stream.StreamFactory;
 import slightlysain.jvtftp.stream.StreamFactoryImpl;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
+import slightlysain.registry.Registry;
 
 /**
  * Hello world!
@@ -111,14 +116,14 @@ public class Jvtftp {
 		TFTPAdapter serverTFTPAdapter = new TFTPAdapterImpl();
 		PacketAdapterFactory adapterFactory = new PacketAdapterFactoryImpl();
 		SessionFactory sessionFactory = new SessionFactoryImpl(adapterFactory);
+		Registry registry = new Registry();
 		RequestRouter requestRouter = new RequestRouterImpl(engine,
-				sessionFactory, streamFactory);
+				sessionFactory, streamFactory, registry);
 		String scripts = getProperty(STARTSCRIPTS_KEY);
 		if (null != scripts && scripts.length() > 0) {
 			String[] allscripts = scripts.split(",");
 			for (String script : allscripts) {
-				//System.out.println("script:" + script + ".");
-				loadScript(requestRouter, script);
+				loadScript(requestRouter, script.trim());
 			}
 		} else {
 			System.out.println("No startup scripts specified");
@@ -133,6 +138,13 @@ public class Jvtftp {
 		}
 
 		ClientRegister clientRegister = new ClientRegisterImpl();
+		
+		Map<String, Object> bindings  = new HashMap<String, Object>();
+		bindings.put("requestRouter", requestRouter);
+		bindings.put("registry", registry);
+		//start groovy shell
+		GroovyShellService gss = new GroovyShellService(bindings, 5000);
+		gss.launchInBackground();
 		Server server = new Server(port, requestRouter, executor,
 				serverTFTPAdapter, clientRegister);
 		try {

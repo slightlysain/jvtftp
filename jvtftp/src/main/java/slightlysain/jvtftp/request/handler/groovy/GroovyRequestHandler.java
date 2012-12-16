@@ -1,5 +1,6 @@
 package slightlysain.jvtftp.request.handler.groovy;
 
+import groovy.lang.MissingPropertyException;
 import groovy.util.ResourceException;
 import groovy.util.ScriptException;
 
@@ -23,21 +24,24 @@ import slightlysain.jvtftp.session.SessionFactory;
 import slightlysain.jvtftp.stream.StreamFactory;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
+import slightlysain.registry.Registry;
 
 public class GroovyRequestHandler extends AbstractRequestHandler {
 	private GroovyScriptFile scriptFile;
 	private SessionFactory factory;
 	private RequestRouter requestRouter;
 	private StreamFactory streamFactory;
+	private Registry registry;
 	private Logger log = LoggerFactory.getLogger(getClass());
 
 	public GroovyRequestHandler(GroovyScriptFile script,
 			SessionFactory controller, RequestRouter requestRouter,
-			StreamFactory streamFactory) {
+			StreamFactory streamFactory, Registry registry) {
 		this.scriptFile = script;
 		this.factory = controller;
 		this.requestRouter = requestRouter;
 		this.streamFactory = streamFactory;
+		this.registry = registry;
 	}
 
 	public void accept(InputStream input, Request request) {
@@ -81,13 +85,14 @@ public class GroovyRequestHandler extends AbstractRequestHandler {
 		} catch (CouldNotRemoveScriptException e1) {
 			log.error("Problem unloading script ", e1);
 		}
-		skip(request);
+		//skip(request);
 	}
 
 	@Override
 	public void execute(Request request) {
 		RequestHandlerBinding binding = new RequestHandlerBinding(request,
 				this, streamFactory);
+		binding.setVariable("registry", registry);
 		try {
 			scriptFile.run(binding);
 		} catch (ResourceException e) {
@@ -99,6 +104,9 @@ public class GroovyRequestHandler extends AbstractRequestHandler {
 			unload(request);
 			return;
 		} catch (CompilationFailedException e) {
+			log.error("Problem running script:" + scriptFile.getName(), e);
+			unload(request);
+		} catch (MissingPropertyException e) {
 			log.error("Problem running script:" + scriptFile.getName(), e);
 			unload(request);
 		}
