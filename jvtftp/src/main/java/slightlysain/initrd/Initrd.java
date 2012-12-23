@@ -4,7 +4,7 @@ import groovy.lang.Closure;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -22,10 +22,11 @@ import org.apache.commons.compress.changes.ChangeSet;
 import org.apache.commons.compress.changes.ChangeSetPerformer;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 
+import slightlysain.jvtftp.io.stream.JvtftpInput;
+import slightlysain.jvtftp.io.stream.StreamFactory;
 import slightlysain.jvtftp.request.handler.groovy.AbstractScript;
-import slightlysain.jvtftp.stream.JvtftpInput;
-import slightlysain.jvtftp.stream.StreamFactory;
 
 public class Initrd implements JvtftpInput {
 	private static final String FILE_MODE = "100777";
@@ -69,6 +70,19 @@ public class Initrd implements JvtftpInput {
 		changeset.add(entry, input);
 	}
 
+	public void add(String filename, InputStream in) throws IOException {
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		IOUtils.copy(in, outputStream);
+		CpioArchiveEntry entry = new CpioArchiveEntry(filename);
+		int mode = Integer.parseInt(FILE_MODE, 8);
+		entry.setMode(mode);
+		byte[] output = outputStream.toByteArray();
+		entry.setSize(output.length);
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(output);
+		changeset.add(entry, inputStream);
+		//inputStream.close();
+	}
+	
 	public void add(String filename, Closure<?> clos) throws IOException {
 		AbstractScript script = (AbstractScript) clos.getOwner();
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
