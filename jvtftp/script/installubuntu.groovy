@@ -2,7 +2,7 @@
 import slightlysain.initrd.*;
 import slightlysain.mac.*;
 
-def installMACs = [ ]
+def installMACs = []
 
 if(registry.contains("installMACs")) {
 	installMACs = registry.get("installMACs")
@@ -13,17 +13,30 @@ if(request.isRead()) {
 	matcher = new MACMatcher(filename)
 	if(matcher.matches()) {
 		if(installMACs.contains(matcher.getMAC())) {
-		accept() {
-			println "DEFAULT installubuntu"
-			println "LABEL installubuntu"
-			println "  KERNEL linux"
-			println "  INITRD initrd.gz"
-		}
+			installMACs.remove(matcher.getMAC())
+			if(registry.contains("rebootAlertMACs")) {
+				macs = registry.get("rebootAlertMACs")
+				macs.add(matcher.getMAC())
+			} else {
+				registry.put("rebootAlertMACs", [ matcher.getMAC()])
+			}
+			accept() {
+				println "DEFAULT installubuntu"
+				println "LABEL installubuntu"
+				println "  KERNEL linux"
+				println "  INITRD initrd.gz"
+			}
 		}
 	} else if(filename.equals("linux")) {
-		accept("linux")
+		accept("install/i386-non-pae-linux")
 	} else if(filename.equals("initrd.gz")) {
-		rd = new Initrd("initrd.gz", streamFactory);
+		rd = new Initrd("install/i386-non-pae-initrd.gz", streamFactory);
+		//		url = "http://images.wisegeek.com/laptop-computer.jpg"
+		//		u = new URL(url)
+		//		inputurl = u.openStream()
+		//		rd.add("laptop.jpg") {
+		//			out << inputurl
+		//		}
 		rd.add("preseed/example-preseed.cfg", "preseed.cfg")
 		accept(rd)
 	}
