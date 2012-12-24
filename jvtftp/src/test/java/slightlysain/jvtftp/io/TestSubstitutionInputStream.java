@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 
 public class TestSubstitutionInputStream {
 	/**
-	 * these test need to be updated and refractored to function as unit tests
+	 * these test need to be updated and refactored to function as unit tests
 	 * without human interaction being needed to confirm the results of the
 	 * tests
 	 */
