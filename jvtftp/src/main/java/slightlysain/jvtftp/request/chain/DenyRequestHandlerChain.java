@@ -31,9 +31,7 @@ public class DenyRequestHandlerChain implements RequestHandlerChain {
 	}
 
 	private SessionController createController(Request request) {
-		TFTPAdapter tftpadapter = new TFTPAdapterImpl();
-		SessionController control = sessionFactory.createController(request,
-				tftpadapter);
+		SessionController control = sessionFactory.createController(request);
 		return control;
 	}
 
