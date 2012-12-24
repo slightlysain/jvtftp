@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import slightlysain.jvtftp.stream.StreamFactory;
+import slightlysain.jvtftp.io.stream.StreamFactory;
 
 public class MockStreamFactory implements StreamFactory {
 	OutputStream out;

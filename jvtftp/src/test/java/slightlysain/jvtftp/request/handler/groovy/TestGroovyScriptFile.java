@@ -171,7 +171,7 @@ public class TestGroovyScriptFile {
 		};
 		DummyRequest dreq = new DummyRequest();
 		MockStreamFactory mockStreamFactory = new MockStreamFactory(outputStream, null);
-		Binding binding = new RequestHandlerBinding(dreq, null, mockStreamFactory);
+		Binding binding = new RequestHandlerBinding(dreq, null, mockStreamFactory, null, null, null);
 		//binding.setVariable("request", dreq);
 		//binding.setVariable("handler", hand);
 		
