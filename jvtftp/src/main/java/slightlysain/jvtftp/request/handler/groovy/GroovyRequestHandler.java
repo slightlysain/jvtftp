@@ -6,12 +6,15 @@ import groovy.util.ScriptException;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.commons.net.tftp.TFTPErrorPacket;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import slightlysain.jvtftp.configuration.Configuration;
+import slightlysain.jvtftp.io.stream.StreamFactory;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.handler.AbstractRequestHandler;
 import slightlysain.jvtftp.request.handler.NoPriorityException;
@@ -21,27 +24,31 @@ import slightlysain.jvtftp.request.router.RequestRouter;
 import slightlysain.jvtftp.request.router.ScriptNotAlreadyLoadedException;
 import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionFactory;
-import slightlysain.jvtftp.stream.StreamFactory;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
 import slightlysain.registry.Registry;
 
 public class GroovyRequestHandler extends AbstractRequestHandler {
 	private GroovyScriptFile scriptFile;
-	private SessionFactory factory;
+	private SessionFactory sessionFactory;
 	private RequestRouter requestRouter;
 	private StreamFactory streamFactory;
 	private Registry registry;
+	private ExecutorService executor;
 	private Logger log = LoggerFactory.getLogger(getClass());
+	private Configuration configuration;
 
 	public GroovyRequestHandler(GroovyScriptFile script,
 			SessionFactory controller, RequestRouter requestRouter,
-			StreamFactory streamFactory, Registry registry) {
+			StreamFactory streamFactory, Registry registry,
+			ExecutorService executor, Configuration configuration) {
 		this.scriptFile = script;
-		this.factory = controller;
+		this.sessionFactory = controller;
 		this.requestRouter = requestRouter;
 		this.streamFactory = streamFactory;
 		this.registry = registry;
+		this.executor = executor;
+		this.configuration = configuration;
 	}
 
 	public void accept(InputStream input, Request request) {
@@ -50,9 +57,7 @@ public class GroovyRequestHandler extends AbstractRequestHandler {
 	}
 
 	private SessionController createController(Request request) {
-		TFTPAdapter tftpadapter = new TFTPAdapterImpl();
-		SessionController control = factory.createController(request,
-				tftpadapter);
+		SessionController control = sessionFactory.createController(request);
 		return control;
 	}
 
@@ -85,13 +90,13 @@ public class GroovyRequestHandler extends AbstractRequestHandler {
 		} catch (CouldNotRemoveScriptException e1) {
 			log.error("Problem unloading script ", e1);
 		}
-		//skip(request);
+		// skip(request);
 	}
 
 	@Override
 	public void execute(Request request) {
 		RequestHandlerBinding binding = new RequestHandlerBinding(request,
-				this, streamFactory);
+				this, streamFactory, sessionFactory, executor, configuration);
 		binding.setVariable("registry", registry);
 		try {
 			scriptFile.run(binding);

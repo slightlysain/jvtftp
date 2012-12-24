@@ -20,6 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import com.iterative.groovy.service.GroovyShellService;
 
+import slightlysain.email.GmailAlert;
+import slightlysain.jvtftp.configuration.Configuration;
+import slightlysain.jvtftp.io.stream.StreamFactory;
+import slightlysain.jvtftp.io.stream.StreamFactoryImpl;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactory;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactoryImpl;
 import slightlysain.jvtftp.request.handler.groovy.InvalidPriorityCommentException;
@@ -33,9 +37,8 @@ import slightlysain.jvtftp.server.ClientRegisterImpl;
 import slightlysain.jvtftp.server.Server;
 import slightlysain.jvtftp.session.SessionFactory;
 import slightlysain.jvtftp.session.SessionFactoryImpl;
-import slightlysain.jvtftp.stream.StreamFactory;
-import slightlysain.jvtftp.stream.StreamFactoryImpl;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
+import slightlysain.jvtftp.tftpadapter.TFTPAdapterFactory;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapterImpl;
 import slightlysain.registry.Registry;
 
@@ -57,28 +60,23 @@ public class Jvtftp {
 	static Properties sysproperties = System.getProperties();
 	static Properties configproperties;
 	static boolean hasConfig = false;
-
-	public static String getProperty(String str) {
-		if (hasConfig) {
-			return sysproperties.getProperty(str,
-					configproperties.getProperty(str));
-		} else {
-			return sysproperties.getProperty(str);
-		}
-	}
+	static Configuration configuration = new Configuration();
 
 	public static void main(String[] args) {
-		
-		String config = System.getProperty(CONFIG_KEY);	
+
+		String config = System.getProperty(CONFIG_KEY);
 		if (null != config) {
 			loadConfiguration(config);
 		} else {
-			System.out.println("No config file specified using default configuration");
+			System.out
+					.println("No config file specified using default configuration");
 			loadConfiguration(DEFAULT_CONFIG);
 		}
-		//setup script roots
-		String roots[] = null; //= { "/home/harry/eclipse-workspace/Script Test/scripts" };
-		String dir = getProperty(SCRIPTDIR_KEY);
+		
+		GmailAlert.setConfiguration(configuration);
+		// setup script roots
+		String roots[] = null;
+		String dir = configuration.getProperty(SCRIPTDIR_KEY);
 		if (null != dir) {
 			System.out.println("Script dir:" + dir);
 			roots = new String[] { dir };
@@ -86,23 +84,22 @@ public class Jvtftp {
 			System.out.println("Scripts directory not set");
 			System.exit(-1);
 		}
-		//create script engine
+		// create script engine
 		GroovyScriptEngine engine = null;
 		try {
 			engine = createScriptEngine(roots);
 		} catch (IOException e1) {
 			log.error("could not create script engine");
 			System.exit(-1);
-		}	
-		
-		String incomingDir = getProperty(INCOMINGFILES_KEY);
+		}
+
+		String incomingDir = configuration.getProperty(INCOMINGFILES_KEY);
 		String outgoingDir;
 		StreamFactory streamFactory = null;
 		if (null != incomingDir) {
-			outgoingDir = getProperty(OUTGOINGFILES_KEY);
-			if(null != outgoingDir) {
-			streamFactory = new StreamFactoryImpl(incomingDir,
-					outgoingDir);
+			outgoingDir = configuration.getProperty(OUTGOINGFILES_KEY);
+			if (null != outgoingDir) {
+				streamFactory = new StreamFactoryImpl(incomingDir, outgoingDir);
 			} else {
 				System.out.println("Could not get outgoing files directory");
 				System.exit(-1);
@@ -111,15 +108,18 @@ public class Jvtftp {
 			System.out.println("Could not get incoming files directory");
 			System.exit(-1);
 		}
-		//setup request router
+		// setup request router
 		ExecutorService executor = Executors.newCachedThreadPool();
 		TFTPAdapter serverTFTPAdapter = new TFTPAdapterImpl();
-		PacketAdapterFactory adapterFactory = new PacketAdapterFactoryImpl();
-		SessionFactory sessionFactory = new SessionFactoryImpl(adapterFactory);
+		PacketAdapterFactory packetAdapterFactory = new PacketAdapterFactoryImpl();
+		TFTPAdapterFactory tFTPAdapterFactory = new TFTPAdapterFactory();
+		SessionFactory sessionFactory = new SessionFactoryImpl(
+				packetAdapterFactory, tFTPAdapterFactory);
 		Registry registry = new Registry();
 		RequestRouter requestRouter = new RequestRouterImpl(engine,
-				sessionFactory, streamFactory, registry);
-		String scripts = getProperty(STARTSCRIPTS_KEY);
+				sessionFactory, streamFactory, registry, executor,
+				configuration);
+		String scripts = configuration.getProperty(STARTSCRIPTS_KEY);
 		if (null != scripts && scripts.length() > 0) {
 			String[] allscripts = scripts.split(",");
 			for (String script : allscripts) {
@@ -128,9 +128,9 @@ public class Jvtftp {
 		} else {
 			System.out.println("No startup scripts specified");
 		}
-		
-		int port = DEFAULT_PORT;	
-		String portstring = getProperty(PORT_KEY);
+
+		int port = DEFAULT_PORT;
+		String portstring = configuration.getProperty(PORT_KEY);
 		if (null != portstring) {
 			port = Integer.parseInt(portstring);
 		} else {
@@ -138,11 +138,12 @@ public class Jvtftp {
 		}
 
 		ClientRegister clientRegister = new ClientRegisterImpl();
-		
-		Map<String, Object> bindings  = new HashMap<String, Object>();
+
+		Map<String, Object> bindings = new HashMap<String, Object>();
 		bindings.put("requestRouter", requestRouter);
 		bindings.put("registry", registry);
-		//start groovy shell
+		bindings.put("config", configuration);
+		// start groovy shell
 		GroovyShellService gss = new GroovyShellService(bindings, 5000);
 		gss.launchInBackground();
 		Server server = new Server(port, requestRouter, executor,
@@ -164,7 +165,7 @@ public class Jvtftp {
 		configproperties = new Properties();
 		hasConfig = true;
 		try {
-			configproperties.load(new FileInputStream(config));
+			configuration.load(config);
 		} catch (FileNotFoundException e) {
 			System.out.println("Could not open config file");
 			System.exit(-1);

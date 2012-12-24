@@ -10,18 +10,17 @@ import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
 
 public interface SessionFactory {
 
-	public abstract Session createErrorSession(InetAddress clientAddress,
-			int port, TFTPAdapter tftpadapter, int code, String message);
+	public abstract Session createErrorSession(TFTPAdapter adapter, InetAddress clientAddress,
+			int port, int code, String message);
 
 	public abstract Chunker createChunker(InputStream input);
 
-	public abstract Session createSendSession(TFTPAdapter tftpadapter,
-			InetAddress clientAddress, int port, Chunker chunker);
+	public abstract Session createSendSession(TFTPAdapter adapter, InetAddress clientAddress,
+			int port, Chunker chunker);
 
-	public abstract Session createRecieveSession(InetAddress clientAddress,
-			int port, TFTPAdapter tftpadapter, OutputStream output);
+	public abstract Session createRecieveSession(TFTPAdapter adapter,InetAddress clientAddress,
+			int port, OutputStream output);
 
-	public abstract SessionController createController(Request request,
-			TFTPAdapter tftpadapter);
+	public abstract SessionController createController(Request request);
 
 }

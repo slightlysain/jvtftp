@@ -18,6 +18,7 @@ import slightlysain.jvtftp.packetadapter.PacketAdapterFactory;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactoryImpl;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
+import slightlysain.jvtftp.tftpadapter.TFTPAdapterFactory;
 
 public class SessionControllerImpl implements SessionController {
 	private TFTPAdapter adapter;
@@ -27,18 +28,18 @@ public class SessionControllerImpl implements SessionController {
 	private SessionFactory factory;// = new PacketAdapterFactoryImpl();
 	private Logger log = LoggerFactory.getLogger(getClass());
 
-	public SessionControllerImpl(Request request, TFTPAdapter adapter,
-			SessionFactory factory) {
+	public SessionControllerImpl(Request request,
+			TFTPAdapterFactory adapterFactory, SessionFactory factory) {
 		this.clientAddress = request.getAddress();
 		this.port = request.getPort();
-		this.adapter = adapter;
+		this.adapter = adapterFactory.createTFTPAdapter();
 		this.factory = factory;
 		this.request = request;
 	}
 
 	public void error(int errorid, String message) {
-		Session session = factory.createErrorSession(clientAddress, port,
-				adapter, errorid, message);
+		Session session = factory.createErrorSession(adapter, clientAddress,
+				port, errorid, message);
 		try {
 			adapter.open(0);
 			session.start();
@@ -74,8 +75,8 @@ public class SessionControllerImpl implements SessionController {
 		if (request.isNetASCII()) {
 			out = new JvtftpFromNetASCIIOutputStream(out);
 		}
-		Session session = factory.createRecieveSession(clientAddress, port,
-				adapter, out);
+		Session session = factory.createRecieveSession(adapter, clientAddress,
+				port, out);
 		try {
 			adapter.open(0);
 			session.start();

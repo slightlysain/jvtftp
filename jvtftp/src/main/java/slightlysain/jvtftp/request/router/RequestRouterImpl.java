@@ -9,10 +9,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import slightlysain.jvtftp.configuration.Configuration;
+import slightlysain.jvtftp.io.stream.StreamFactory;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.request.RequestAbstract;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
@@ -30,7 +33,6 @@ import slightlysain.jvtftp.request.handler.groovy.PriorityCommentNotFoundExcepti
 import slightlysain.jvtftp.session.SessionController;
 import slightlysain.jvtftp.session.SessionControllerImpl;
 import slightlysain.jvtftp.session.SessionFactory;
-import slightlysain.jvtftp.stream.StreamFactory;
 import slightlysain.registry.Registry;
 
 public class RequestRouterImpl implements RequestRouter {
@@ -51,15 +53,20 @@ public class RequestRouterImpl implements RequestRouter {
 	private static Logger log = LoggerFactory
 			.getLogger(RequestRouterImpl.class);
 	private Registry registry;
+	private ExecutorService executorService;
+	private Configuration configuration;
 
 	/*------------------------------------constructor--------------------------------*/
 	public RequestRouterImpl(GroovyScriptEngine scriptengine,
 			SessionFactory sessionFactory, StreamFactory streamFactory,
-			Registry registry) {
+			Registry registry, ExecutorService executorService,
+			Configuration configuration) {
+		this.executorService = executorService;
 		this.scriptengine = scriptengine;
 		this.sessionFactory = sessionFactory;
 		this.streamFactory = streamFactory;
 		this.registry = registry;
+		this.configuration = configuration;
 		handlerChains = new ConcurrentHashMap<RequestHandlerPriority, RequestHandlerChain>();
 		handlerSets = new ConcurrentHashMap<RequestHandlerPriority, Set<RequestHandler>>();
 		RequestHandlerPriority[] priorities = RequestHandlerPriority.values();
@@ -105,7 +112,7 @@ public class RequestRouterImpl implements RequestRouter {
 		GroovyScriptFile scriptFile = new GroovyScriptFileImpl(scriptengine,
 				script);
 		return new GroovyRequestHandler(scriptFile, sessionFactory, this,
-				streamFactory, registry);
+				streamFactory, registry, executorService, configuration);
 	}
 
 	/*--------------------------------------------public----------------------------------*/

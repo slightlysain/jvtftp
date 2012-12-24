@@ -7,15 +7,19 @@ import java.net.InetAddress;
 import slightlysain.jvtftp.packetadapter.PacketAdapterFactory;
 import slightlysain.jvtftp.request.Request;
 import slightlysain.jvtftp.tftpadapter.TFTPAdapter;
+import slightlysain.jvtftp.tftpadapter.TFTPAdapterFactory;
 
 public class SessionFactoryImpl implements SessionFactory {
 	private PacketAdapterFactory packetFactory;
+	private TFTPAdapterFactory tFTPAdapterFactory;
 
-	public SessionFactoryImpl(PacketAdapterFactory packetFactory) {
-		if(null == packetFactory) { 
+	public SessionFactoryImpl(PacketAdapterFactory packetFactory,
+			TFTPAdapterFactory adapterFactory) {
+		if (null == packetFactory) {
 			throw new NullPointerException("null packet factory");
 		}
 		this.packetFactory = packetFactory;
+		this.tFTPAdapterFactory = adapterFactory;
 	}
 
 	/*
@@ -26,8 +30,8 @@ public class SessionFactoryImpl implements SessionFactory {
 	 * .jvtftp.packetadapter.PacketAdapterFactory, java.net.InetAddress, int,
 	 * slightlysain.jvtftp.tftpadapter.TFTPAdapter)
 	 */
-	public Session createErrorSession(InetAddress clientAddress, int port,
-			TFTPAdapter tftpadapter, int code, String message) {
+	public Session createErrorSession(TFTPAdapter tftpadapter,
+			InetAddress clientAddress, int port, int code, String message) {
 		return new ErrorSession(packetFactory, clientAddress, port,
 				tftpadapter, code, message);
 	}
@@ -66,16 +70,15 @@ public class SessionFactoryImpl implements SessionFactory {
 	 * .jvtftp.packetadapter.PacketAdapterFactory, java.net.InetAddress, int,
 	 * slightlysain.jvtftp.tftpadapter.TFTPAdapter, java.io.OutputStream)
 	 */
-	public Session createRecieveSession(InetAddress clientAddress, int port,
-			TFTPAdapter tftpadapter, OutputStream output) {
+	public Session createRecieveSession(TFTPAdapter tftpadapter,
+			InetAddress clientAddress, int port, OutputStream output) {
 		return new RecieveSession(packetFactory, clientAddress, port,
 				tftpadapter, output);
 	}
 
-	public SessionController createController(Request request,
-			TFTPAdapter tftpadapter) {
+	public SessionController createController(Request request) {
 		SessionController controller = new SessionControllerImpl(request,
-				tftpadapter, this);
+				tFTPAdapterFactory, this);
 		return controller;
 	}
 

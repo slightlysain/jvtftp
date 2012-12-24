@@ -10,13 +10,20 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import slightlysain.jvtftp.io.OutputClosureRunner;
+import slightlysain.jvtftp.io.stream.JvtftpInput;
+import slightlysain.jvtftp.io.stream.StreamFactory;
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.stream.JvtftpInput;
-import slightlysain.jvtftp.stream.StreamFactory;
+import slightlysain.jvtftp.request.handler.accepter.AbstractAccepter;
+import slightlysain.jvtftp.request.handler.accepter.ClosureRecieveAcceptor;
+import slightlysain.jvtftp.request.handler.accepter.ClosureSendAcceptor;
+import slightlysain.jvtftp.request.handler.accepter.FileRecieveAccepter;
+import slightlysain.jvtftp.request.handler.accepter.FileSendAcceptor;
 
 public abstract class AbstractScript extends Script {
 
@@ -24,8 +31,8 @@ public abstract class AbstractScript extends Script {
 	private Request request;
 	private GroovyRequestHandler handler;
 	private PrintStream out = System.out;
+	private boolean outNeedsToClose = false;
 	private boolean setup = false;
-	private StreamFactory streamFactory;
 	private Logger log = LoggerFactory.getLogger(getClass());
 	private boolean handled = false;
 
@@ -34,7 +41,6 @@ public abstract class AbstractScript extends Script {
 			binding = (RequestHandlerBinding) getBinding();
 			request = binding.getRequest();
 			handler = binding.getHandler();
-			streamFactory = binding.getStreamFactory();
 			setup = true;
 		}
 	}
@@ -42,6 +48,14 @@ public abstract class AbstractScript extends Script {
 	private void setHandled() {
 		handled = true;
 		binding.setHandled(true);
+	}
+
+	public PrintStream getOut() {
+		return out;
+	}
+
+	public AbstractScript getScript() {
+		return this;
 	}
 
 	@Override
@@ -76,61 +90,49 @@ public abstract class AbstractScript extends Script {
 
 	private void sendAccept(String filename) throws FileNotFoundException {
 		setup();
-		InputStream fis = null;
-		try {
-			fis = streamFactory.getFileInputStream(filename);
-		} catch (FileNotFoundException e) {
-			log.error("could not find file");
-			throw e;
-		}
-		handler.accept(fis, request);
+		FileSendAcceptor accepter = new FileSendAcceptor(binding, filename);
+		accepter.accept();
 		setHandled();
 	}
 
-	private void recieveAccept(String filename) {
+	private void recieveAccept(String filename) throws FileNotFoundException {
 		setup();
-		OutputStream fos = null;
-		try {
-			fos = streamFactory.getFileOutputStream(filename);
-		} catch (FileNotFoundException e) {
-			log.error("could not find file");
-			e.printStackTrace();
-		}
-		handler.accept(fos, request);
+		FileRecieveAccepter accepter = new FileRecieveAccepter(binding,
+				filename);
+		accepter.accept();
 		setHandled();
 	}
 
 	public void setPrintStream(PrintStream out) {
+		setup();
 		this.out = out;
+		binding.setVariable("out", out);
+		outNeedsToClose = true;
 	}
 
 	public void resetPrintStream() {
+		setup();
+		if (outNeedsToClose) {
+			out.close();
+			outNeedsToClose = false;
+		}
 		out = System.out;
+		binding.setVariable("out", out);
 	}
 
 	public void sendAccept(Closure<?> clos) throws IOException {
 		setup();
-		// change to byte array
-		PipedOutputStream outputStream = new PipedOutputStream();
-		PipedInputStream inputStream = new PipedInputStream(outputStream);
-		setPrintStream(new PrintStream(outputStream));
-		clos.call();
-		out.close();
-		outputStream.close();
-		resetPrintStream();
-		handler.accept(inputStream, request);
+		ClosureSendAcceptor accepter = new ClosureSendAcceptor(binding, clos);
+		accepter.accept();
 		setHandled();
 	}
 
 	public void recieveAccept(Closure<?> clos) throws IOException {
 		setup();
-		// change to byte array
-		PipedOutputStream outputStream = new PipedOutputStream();
-		InputStream in = new PipedInputStream(outputStream);
-		handler.accept(outputStream, request);
-		clos.call(in);
-		in.close();
-		outputStream.close();
+		ClosureRecieveAcceptor accepter = new ClosureRecieveAcceptor(binding,
+				clos);
+		accepter.accept();
+		setHandled();
 	}
 
 	public void accept(Closure<?> clos) throws IOException {
@@ -160,7 +162,7 @@ public abstract class AbstractScript extends Script {
 			log.error("Bad request recieved");
 		}
 	}
-	
+
 	public void accept() throws FileNotFoundException {
 		setup();
 		if (handled) {
@@ -179,11 +181,10 @@ public abstract class AbstractScript extends Script {
 	public void accept(JvtftpInput inputStream) throws FileNotFoundException,
 			IOException, InterruptedException {
 		setup();
+		ExecutorService executor = binding.getExecutorService();
 		if (request.isRead()) {
-			Thread t = new Thread(inputStream);
-			t.start();
+			executor.execute(inputStream);
 			handler.accept(inputStream.getInput(), request);
-			t.join();
 			setHandled();
 		} else if (request.isWrite()) {
 			log.error("Cannot respond to write request with inputstream");
