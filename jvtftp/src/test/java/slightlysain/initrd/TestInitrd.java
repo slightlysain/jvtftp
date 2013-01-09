@@ -20,7 +20,7 @@ public class TestInitrd {
 	Initrd initrd;
 
 	@Test
-	public void testCreation() throws IOException {
+	public void testCreation() throws Exception {
 		System.out.println(new Date().toString());
 		StreamFactory factory = new StreamFactoryImpl(
 				"/home/harry/git/jvtftp/jvtftp/incoming",
@@ -34,11 +34,11 @@ public class TestInitrd {
 	 * long test this test needs updating to check for error conditions and that
 	 * the output file conforms to what is expected. This test is also time
 	 * consuming and has been diabled
-	 * 
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	@Ignore
-	public void testGenerateOutput() throws IOException {
+	//@Test
+	public void testGenerateOutput() throws Exception {
 		System.out.println(new Date().toString());
 		StreamFactory factory = new StreamFactoryImpl(
 				"/home/harry/git/jvtftp/jvtftp/incoming",

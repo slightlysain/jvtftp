@@ -4,7 +4,8 @@ import org.apache.commons.net.tftp.TFTPErrorPacket;
 import org.apache.commons.net.tftp.TFTPPacket;
 import static org.apache.commons.net.tftp.TFTPErrorPacket.*;
 
-public class ErrorPacketImpl extends AbstractPacketAdapter implements ErrorPacket {
+public class ErrorPacketImpl extends AbstractPacketAdapter implements
+		ErrorPacket {
 	private TFTPErrorPacket packet;
 
 	public ErrorPacketImpl(TFTPPacket p) {
@@ -12,21 +13,27 @@ public class ErrorPacketImpl extends AbstractPacketAdapter implements ErrorPacke
 		packet = (TFTPErrorPacket) p;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.packetadapter.ErrorPacket#getCode()
 	 */
 	public int getCode() {
 		return packet.getError();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.packetadapter.ErrorPacket#getMessage()
 	 */
 	public String getMessage() {
 		return packet.getMessage();
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.packetadapter.ErrorPacket#getCodeString()
 	 */
 	public String getCodeString() {
@@ -47,18 +54,22 @@ public class ErrorPacketImpl extends AbstractPacketAdapter implements ErrorPacke
 		case UNDEFINED:
 			return "UNDEFINED";
 		case UNKNOWN_TID:
-			return "UNKNOWN TID";
+			return "UNKNOWN_TID";	
+		case 8: 
+			return "BSDP error";
 		default:
-			throw new IndexOutOfBoundsException("error code does not exist");
+			throw new IndexOutOfBoundsException("error code (" + code + ")does not exist");
 		}
 	}
-	
+
 	@Override
 	public boolean isError() {
 		return true;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see slightlysain.jvtftp.packetadapter.ErrorPacket#isOutOfSpace()
 	 */
 	public boolean isOutOfSpace() {

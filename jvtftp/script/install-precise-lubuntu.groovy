@@ -46,10 +46,10 @@ if(request.isRead()) {
 		//		}
 		//rd.add("preseed/example-preseed.cfg", "preseed.cfg")
 		preseed = new ReplaceInputStream("precise/lubuntu-preseed.cfg", streamFactory)
-		throw new Exception("Password not set");
+		//throw new Exception("Password not set");
 		def map = [ 'username' : 'winston', 
 					'fullusername' : "Winston",
-					'password' :  '//password', //is "password"
+					'password' :  '$1$ZofABOOU$2/MFMb8..JkcPsNOExgWo0', //is "password"
 					'hostname' : 'daphne',
 					'domainname' : 'home.local'
 					]

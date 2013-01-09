@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.request.RequestAbstract;
+import slightlysain.jvtftp.request.AbstractRequest;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
 import slightlysain.jvtftp.request.router.RequestRouter;
 import slightlysain.jvtftp.session.SessionController;

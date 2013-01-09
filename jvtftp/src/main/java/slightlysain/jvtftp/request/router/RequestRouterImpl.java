@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import slightlysain.jvtftp.configuration.Configuration;
 import slightlysain.jvtftp.io.stream.StreamFactory;
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.request.RequestAbstract;
+import slightlysain.jvtftp.request.AbstractRequest;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
 import slightlysain.jvtftp.request.chain.DenyRequestHandlerChain;
 import slightlysain.jvtftp.request.chain.RequestHandlerChain;

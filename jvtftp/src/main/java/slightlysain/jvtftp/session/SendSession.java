@@ -64,6 +64,14 @@ public class SendSession extends AbstractSession {
 				// no more blocks so close adapter
 				tftpadapter.close();
 			}
+		} else if(isWrapAround()) {
+			expectedBlock = 0;
+			if (chunker.hasNextByte()) {
+				sendNextBlock();
+			} else {
+				// no more blocks so close adapter
+				tftpadapter.close();
+			}
 		} else if (isPreviousBlockAck()) {
 			log.error("acknowledgment not for expected block number:"
 					+ expectedBlock
@@ -75,6 +83,10 @@ public class SendSession extends AbstractSession {
 			log.error("unexpected problem occured");
 			tftpadapter.close();
 		}
+	}
+
+	private boolean isWrapAround() {
+		return 0 == ackpacket.getBlockNumber();
 	}
 
 	private boolean isGreaterAckThanBlock() {

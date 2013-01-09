@@ -3,7 +3,7 @@ package slightlysain.jvtftp.request.router;
 import java.io.FileNotFoundException;
 
 import slightlysain.jvtftp.request.Request;
-import slightlysain.jvtftp.request.RequestAbstract;
+import slightlysain.jvtftp.request.AbstractRequest;
 import slightlysain.jvtftp.request.UnknownRequestTypeException;
 import slightlysain.jvtftp.request.handler.groovy.InvalidPriorityCommentException;
 import slightlysain.jvtftp.request.handler.groovy.PriorityCommentNotFoundException;

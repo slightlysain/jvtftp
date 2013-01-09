@@ -1,7 +1,10 @@
 //priority INSTALL_COMMAND
+import javax.naming.ldap.Rdn;
+
 import slightlysain.initrd.*;
 import slightlysain.mac.*;
 import slightlysain.jvtftp.io.*;
+import slightlysain.passwords.*;
 
 MACS_KEY = "laptopMACs"
 KERNEL_KEY = "squeeze-laptop-linux"
@@ -35,23 +38,31 @@ if(request.isRead()) {
 			}
 		}
 	} else if(filename.equals(KERNEL_KEY)) {
-		accept("squeeze/linux")
+		accept("squeeze/i386/linux")
 	} else if(filename.equals(INITRD_KEY)) {
-		rd = new Initrd("squeeze/initrd.gz", streamFactory)
+		rd = new Initrd("squeeze/i386/initrd.gz", streamFactory)
+		rd.add("squeeze/i386/google-chrome-stable_current_i386.deb", "google-chrome.deb")
+		rd.add("squeeze/i386/install-chrome.sh", "install-chrome.sh")
 		//		url = "http://images.wisegeek.com/laptop-computer.jpg"
 		//		u = new URL(url)
 		//		inputurl = u.openStream()
 		//		rd.add("laptop.jpg") {
 		//			out << inputurl
 		//		}
+		
+		
+		//TODO: add chrome to rd + install
 		preseed = new ReplaceInputStream("squeeze/laptop-squeeze-preseed.cfg", streamFactory)
+		
+		pass = "password"
 		def map = [ 'username': 'winston',
-			'fullusername' : 'Winston',
-			'password' : '//password', //password
-			'rootpassword' : '//password', //password
+			'fullusername' : 'Winston',			
+			'password' : EncryptPassword.encrypt(pass), //password
+			'rootpassword' : EncryptPassword.encrypt(pass), //password
 			'hostname' : 'Something',
 			'domainname' : 'home.local',
-			'httpproxy' : 'http://192.168.5.2:3142'
+			'httpproxy' : 'http://192.168.7.1:3142',
+			'extra' : 'd-i preseed/late_command string /install-chrome.sh'
 		]
 		preseed.setMapping(map)
 		rd.add("preseed.cfg", preseed)

@@ -53,6 +53,7 @@ public class Jvtftp {
 	private static final String INCOMINGFILES_KEY = "slightlysain.jvtftp.incomingfiles";
 	private static final String CONFIG_KEY = "slightlysain.jvtftp.config";
 	private static final String SCRIPTDIR_KEY = "slightlysain.jvtftp.scriptsdir";
+	
 	static int DEFAULT_PORT = 2269;
 	static final String DEFAULT_CONFIG = "/home/harry/git/jvtftp/jvtftp/config/config.properties";
 
